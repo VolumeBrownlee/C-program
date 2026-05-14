@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>C Mastery — From Zero to Independent</title>
+
+<!-- PWA: makes the app installable on phones and desktop -->
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#4f8cff" />
+<meta name="description" content="Learn C from beginner to confident. Lessons, 25 practice problems, and the Prepaid Meter Simulator project." />
+
+<!-- iOS: Add to Home Screen support -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="C Mastery" />
+<link rel="apple-touch-icon" href="icon.svg" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="logo">C</div>
+      <div>
+        <div class="brand-title">C Mastery</div>
+        <div class="brand-sub">Independent. Confident. Pro.</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Overall progress</span><span id="progress-pct">0%</span></div>
+      <div class="progress-bar"><div id="progress-fill"></div></div>
+    </div>
+
+    <nav id="nav"></nav>
+
+    <div class="sidebar-footer">
+      <button id="reset-btn" class="ghost-btn" title="Reset progress">Reset progress</button>
+    </div>
+  </aside>
+
+  <main id="main">
+    <header id="topbar">
+      <button id="menu-toggle" aria-label="Toggle menu">☰</button>
+      <div id="crumb"></div>
+      <div class="top-actions">
+        <button id="theme-toggle" class="ghost-btn" title="Toggle theme">🌙</button>
+        <button id="playground-btn" class="primary-btn">Open Playground</button>
+      </div>
+    </header>
+
+    <section id="content"></section>
+
+    <footer id="bottom-nav">
+      <button id="prev-btn" class="ghost-btn">← Previous</button>
+      <button id="mark-done-btn" class="primary-btn">Mark as done ✓</button>
+      <button id="next-btn" class="ghost-btn">Next →</button>
+    </footer>
+  </main>
+
+  <!-- Playground modal -->
+  <div id="playground" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>C Playground</h3>
+        <div class="playground-actions">
+          <button id="run-btn" class="primary-btn">▶ Run</button>
+          <button id="open-external-btn" class="ghost-btn" title="Copy code and open OnlineGDB in a new tab">Open in OnlineGDB ↗</button>
+          <button id="copy-btn" class="ghost-btn">Copy</button>
+          <button id="reset-code-btn" class="ghost-btn">Reset</button>
+          <button id="close-playground" class="ghost-btn">✕</button>
+        </div>
+      </div>
+      <div class="playground-body">
+        <div class="editor-pane">
+          <textarea id="editor"></textarea>
+          <div class="stdin-wrap">
+            <label>Standard input (one value per line)</label>
+            <textarea id="stdin" placeholder="If your program reads input, type it here..."></textarea>
+          </div>
+        </div>
+        <div class="output-pane">
+          <div class="output-header">Output</div>
+          <pre id="output">Press ▶ Run to compile and execute your code.</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="content/lessons.js"></script>
+<script src="content/problems.js"></script>
+<script src="content/projects.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
