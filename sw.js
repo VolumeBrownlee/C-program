@@ -1,11 +1,14 @@
-/* C Mastery service worker
-   - Caches the app shell so it works offline after first visit
-   - Lets the browser show an "Install app" prompt on Android/Chrome
-   - Lets iOS Safari's "Add to Home Screen" feel app-like
-   Network requests to OTHER origins (like the Piston compiler API) are
-   left untouched so the Run button still works online.
+/* C Mastery service worker — network-first edition
+   Strategy:
+     - Always try the network first for same-origin files.
+     - On success, the response is stored in the cache as an offline backup.
+     - On failure (offline / flaky network), we serve from the cache.
+     - Cross-origin requests (compiler APIs, CodeMirror CDN) are ignored
+       so the Run button isn't affected.
+   This avoids the "browser is stuck on old code after I redeployed" trap
+   that cache-first service workers create.
 */
-const CACHE = "c-mastery-v1";
+const CACHE = "c-mastery-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -19,42 +22,41 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", (e) => {
+  // Pre-warm the cache so the app still works on a flight after first visit.
   e.waitUntil(
-    caches
-      .open(CACHE)
-      .then((c) => c.addAll(ASSETS))
+    caches.open(CACHE)
+      .then((c) => c.addAll(ASSETS).catch(() => {})) // tolerate missing files
       .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener("activate", (e) => {
   e.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET") return;
-  const url = new URL(req.url);
 
-  // Same-origin: serve from cache first, fall back to network, then to index.
-  if (url.origin === location.origin) {
-    e.respondWith(
-      caches.match(req).then(
-        (cached) =>
-          cached ||
-          fetch(req)
-            .then((res) => {
-              const copy = res.clone();
-              caches.open(CACHE).then((c) => c.put(req, copy));
-              return res;
-            })
-            .catch(() => caches.match("./index.html"))
-      )
-    );
-  }
-  // Cross-origin (CodeMirror CDN, Piston API): just go to network, no caching.
+  const url = new URL(req.url);
+  // Leave cross-origin requests (Codex/Piston/Wandbox/CodeMirror) alone.
+  if (url.origin !== location.origin) return;
+
+  // NETWORK-FIRST: try fresh, fall back to cache only when network fails.
+  e.respondWith(
+    fetch(req)
+      .then((res) => {
+        // Cache a copy for offline use, but only if the response is OK
+        if (res && res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy));
+        }
+        return res;
+      })
+      .catch(() => caches.match(req).then((cached) => cached || caches.match("./index.html")))
+  );
 });
